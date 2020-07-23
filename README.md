@@ -17,16 +17,16 @@ Run the training on an extra instance in a docker container and monitor the expe
 ## Setting up the Web Application
 
 ### On your local laptop:
-'''
+```
 cd CD4ML-AWS-Serverless
-'''
+```
 start virtenv flask:
-'''
+```
 source flask/bin/activate
-'''
+```
 Set environment variables and run the flask server:
-'''
+```
 export FLASK_APP=flaskApp/app.py
 export FLASK_ENV=development
 flask run
-'''
+```
