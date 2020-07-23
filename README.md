@@ -30,3 +30,7 @@ export FLASK_APP=flaskApp/app.py
 export FLASK_ENV=development
 flask run
 ```
+At the end, deactivage the virtualenv:
+````
+deactivate
+````
