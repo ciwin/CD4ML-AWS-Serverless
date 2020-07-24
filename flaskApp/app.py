@@ -1,5 +1,6 @@
 from flask import Flask, render_template, jsonify, request
 from datetime import datetime
+import json
 # from sklearn.externals import joblib
 # import joblib
 import pandas as pd
@@ -44,10 +45,19 @@ def get_prediction():
   date = datetime.strptime(date_string, '%Y-%m-%d')
 
   product = products[request.args.get("item_nbr")]
+
+  with open ("/Users/cwindheu/Dev/CD4ML/CD4ML-AWS-Serverless/flaskApp/family_encoder.json", "r") as fp:
+    family_encoder = json.load (fp)
+
+  if date.weekday() >= 5:
+    dayoff = 1
+  else:
+    dayoff = 0
+
   data = {
     "date": date_string,
     "item_nbr": request.args.get("item_nbr"),
-    "family": product['family'],
+    "family": family_encoder[product['family']],
     "class": product['class'],
     "perishable": product['perishable'],
     "transactions": 1000,
@@ -56,12 +66,14 @@ def get_prediction():
     "day": date.day,
     "dayofweek": date.weekday(),
     "days_til_end_of_data": 0,
-    "dayoff": date.weekday() >= 5
+    # "dayoff": date.weekday() >= 5
+    "dayoff": dayoff
   }
   df = pd.DataFrame(data=data, index=['row1'])
 
 #  df = decision_tree.encode_categorical_columns(df)
 #  pred = loaded_model.predict(df)
+
 #  if FLUENTD_HOST:
 #      logger = sender.FluentSender(TENANT, host=FLUENTD_HOST, port=int(FLUENTD_PORT))
 #      log_payload = {'prediction': pred[0], **data}
@@ -70,7 +82,8 @@ def get_prediction():
 #          print(logger.last_error)
 #          logger.clear_last_error()
 
-  return "%d" % pred[0]
+#  return "%d" % pred[0]
+  return "42" 
 
 if __name__ == '__main__':
     app.run(host = '0.0.0.0', port=5005)
