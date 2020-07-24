@@ -1,0 +1,5 @@
+# Requirements for the flask web application
+joblib
+scikit-learn
+pandas
+
