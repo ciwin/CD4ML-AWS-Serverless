@@ -10,3 +10,6 @@ Train and evaluate different Machine Learning models in the Jupyter notebook.
 
 ## TrainModelSM.ipynb
 Run the training on an extra instance in a docker container.
+
+## TrainModelSMExp.ipynb
+Run the training on an extra instance in a docker container and monitor the experiments and trials in SageMaker Studio.
