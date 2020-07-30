@@ -98,8 +98,14 @@ if __name__ == '__main__':
 
     logger.debug("Training done")
 
+    # Save the model
+    joblib.dump(clf, os.path.join(args.model_dir, "model.joblib"))
+    
+    logger.debug("Model written in model_dir")
+    
     logger.debug("Making prediction on validation data")
 
+    
     validation_predictions = make_predictions(clf, validation_data)
 
     logger.info('nwrmsle: {:.4f};\n'.format(eval_nwrmsle(validation_predictions,
@@ -108,11 +114,6 @@ if __name__ == '__main__':
     logger.info('r2_score: {:.4f};\n'.format(metrics.r2_score(y_true=validation_data['unit_sales'].values, 
                                                               y_pred=validation_predictions)))
 
-    
 def model_fn(model_dir):
-    # Deserialized and return fitted model
-    # Note that this should have the same name as the serialized model in the main method
-    
     clf = joblib.load(os.path.join(model_dir, "model.joblib"))
-    
     return clf
