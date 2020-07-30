@@ -77,7 +77,7 @@ def get_prediction():
   URL     = "https://0y29p03pyl.execute-api.us-east-1.amazonaws.com/test/predictdemand"
   PARAMS  = {"Content-Type": "application/json"}
   HEADERS = {'AccessKey': '<insert your access key here>',
-             'SecretKey': '<insert your secret key here'
+             'SecretKey': '<insert your secret key here>'
             }
 
   response = requests.post (url = URL, params = PARAMS, headers=HEADERS, data=BODY)
