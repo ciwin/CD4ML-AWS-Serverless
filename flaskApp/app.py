@@ -1,12 +1,12 @@
-from flask import Flask, render_template, jsonify, request
-from datetime import datetime
+from   flask import Flask, render_template, jsonify, request
+from   datetime import datetime
 import json
-# from sklearn.externals import joblib
-# import joblib
+import numpy as np
 import pandas as pd
-# import decision_tree
 import os
-# from fluent import sender, event
+import io
+import requests
+
 
 app = Flask(__name__, template_folder='webapp/templates', static_folder='webapp/static')
 
@@ -28,6 +28,11 @@ products = {
     }
 }
 
+def np2csv(arr):
+    csv = io.BytesIO()
+    np.savetxt(csv, arr, delimiter=',', fmt='%g')
+    return csv.getvalue().decode().rstrip()
+
 TENANT = os.getenv('TENANT', 'local')
 FLUENTD_HOST = os.getenv('FLUENTD_HOST')
 FLUENTD_PORT = os.getenv('FLUENTD_PORT')
@@ -38,16 +43,13 @@ def index():
 
 @app.route('/prediction')
 def get_prediction():
-#  loaded_model = joblib.load('data/decision_tree/model.pkl')
 
   date_string = request.args.get('date')
+  date        = datetime.strptime(date_string, '%Y-%m-%d')
+  product     = products[request.args.get("item_nbr")]
 
-  date = datetime.strptime(date_string, '%Y-%m-%d')
-
-  product = products[request.args.get("item_nbr")]
-
-  with open ("/Users/cwindheu/Dev/CD4ML/CD4ML-AWS-Serverless/flaskApp/family_encoder.json", "r") as fp:
-    family_encoder = json.load (fp)
+  with open ("family_encoder.json", "r") as fp:
+      family_encoder = json.load (fp)
 
   if date.weekday() >= 5:
     dayoff = 1
@@ -55,8 +57,8 @@ def get_prediction():
     dayoff = 0
 
   data = {
-    "date": date_string,
-    "item_nbr": request.args.get("item_nbr"),
+    "id": 0,
+    "item_nbr": int(request.args.get("item_nbr")),
     "family": family_encoder[product['family']],
     "class": product['class'],
     "perishable": product['perishable'],
@@ -66,24 +68,22 @@ def get_prediction():
     "day": date.day,
     "dayofweek": date.weekday(),
     "days_til_end_of_data": 0,
-    # "dayoff": date.weekday() >= 5
     "dayoff": dayoff
   }
-  df = pd.DataFrame(data=data, index=['row1'])
 
-#  df = decision_tree.encode_categorical_columns(df)
-#  pred = loaded_model.predict(df)
+  df      = pd.DataFrame(data, index=['data'])
 
-#  if FLUENTD_HOST:
-#      logger = sender.FluentSender(TENANT, host=FLUENTD_HOST, port=int(FLUENTD_PORT))
-#      log_payload = {'prediction': pred[0], **data}
-#      print('logging {}'.format(log_payload))
-#      if not logger.emit('prediction', log_payload):
-#          print(logger.last_error)
-#          logger.clear_last_error()
+  BODY    = '[[' + np2csv(df) + ']]'
+  URL     = "https://0y29p03pyl.execute-api.us-east-1.amazonaws.com/test/predictdemand"
+  PARAMS  = {"Content-Type": "application/json"}
+  HEADERS = {'AccessKey': '<insert your access key here>',
+             'SecretKey': '<insert your secret key here>'
+            }
 
-#  return "%d" % pred[0]
-  return "42" 
+  response = requests.post (url = URL, params = PARAMS, headers=HEADERS, data=BODY)
+  data     = response.json()
+
+  return "%d" % int (data[0])
 
 if __name__ == '__main__':
     app.run(host = '0.0.0.0', port=5005)

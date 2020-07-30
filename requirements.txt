@@ -2,4 +2,6 @@
 joblib
 scikit-learn
 pandas
-
+requests
+json
+numpy
